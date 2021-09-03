@@ -3,6 +3,40 @@ const app = express();
 const pool = require("./db");
 app.use(express.json());
 
+// get all todos
+app.get("/todos", async (req, res) => {
+  const allTodos = await pool.query("SELECT * FROM todo");
+  res.json(allTodos.rows);
+});
+
+// get a single todo
+
+app.get("/todos/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const todo = await pool.query("SELECT * FROM todo WHERE todo_id=$1", [id]);
+    res.json(todo.rows[0]);
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+// Update table
+app.put("/todos/:id", async (req, res) => {
+  try {
+    const { id } = req.params; // WHERE
+    const { description } = req.body; // SET
+    const updateTodo = await pool.query(
+      "UPDATE todo SET description=$1 WHERE todo_id=$2",
+      [description, id]
+    );
+    res.json("todo is updated");
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+// Create todo
 app.post("/todos", async (req, res) => {
   try {
     const { description } = req.body;
